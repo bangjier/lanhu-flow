@@ -27,7 +27,36 @@ LanhuFlow MCP 在本地以 `stdio` 方式运行。你把有权限访问的蓝湖
 
 ## 安装
 
-环境要求：Node.js 20 或更高版本。无需克隆仓库，在 MCP 客户端中使用 `npx` 即可：
+环境要求：Node.js 20 或更高版本。以下方式都会通过 `npx` 自动下载并运行 `lanhu-flow-mcp`，无需克隆仓库。
+
+### Codex
+
+```bash
+codex mcp add \
+  --env LANHU_COOKIE="your_lanhu_cookie_here" \
+  lanhu-flow -- npx -y lanhu-flow-mcp
+
+codex mcp list
+```
+
+添加后重启 Codex 或新建任务，使 MCP 配置生效。
+
+### Claude Code
+
+```bash
+claude mcp add \
+  --transport stdio \
+  --env LANHU_COOKIE="your_lanhu_cookie_here" \
+  lanhu-flow -- npx -y lanhu-flow-mcp
+
+claude mcp list
+```
+
+不同 Claude Code 版本的命令选项可能略有差异；如果命令不识别，请先运行 `claude mcp add --help` 核对本机语法。
+
+### Claude Desktop、Cursor 与 Windsurf
+
+在客户端的 MCP 配置文件中添加：
 
 ```json
 {
@@ -43,7 +72,7 @@ LanhuFlow MCP 在本地以 `stdio` 方式运行。你把有权限访问的蓝湖
 }
 ```
 
-配置完成后，重启 Cursor、Windsurf、Claude Desktop 或其他支持 `stdio` 的 MCP 客户端。
+保存后重启客户端。命令中的 Cookie 或 JSON 中的 `env` 会保存在对应客户端的本地配置中，请勿公开或提交这些配置。
 
 ### 从源码运行
 

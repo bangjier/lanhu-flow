@@ -27,7 +27,36 @@ Design analysis is composed of independent outputs. A client can request only th
 
 ## Installation
 
-Requirement: Node.js 20 or later. No repository checkout is required; configure your MCP client to run the package through `npx`:
+Requirement: Node.js 20 or later. Each option below uses `npx` to download and run `lanhu-flow-mcp`; no repository checkout is required.
+
+### Codex
+
+```bash
+codex mcp add \
+  --env LANHU_COOKIE="your_lanhu_cookie_here" \
+  lanhu-flow -- npx -y lanhu-flow-mcp
+
+codex mcp list
+```
+
+Restart Codex or start a new task after adding the server.
+
+### Claude Code
+
+```bash
+claude mcp add \
+  --transport stdio \
+  --env LANHU_COOKIE="your_lanhu_cookie_here" \
+  lanhu-flow -- npx -y lanhu-flow-mcp
+
+claude mcp list
+```
+
+Claude Code CLI options can vary between versions. Run `claude mcp add --help` first if your installed version does not recognize the command.
+
+### Claude Desktop, Cursor, and Windsurf
+
+Add the server to the client's MCP configuration file:
 
 ```json
 {
@@ -43,7 +72,7 @@ Requirement: Node.js 20 or later. No repository checkout is required; configure 
 }
 ```
 
-Restart Cursor, Windsurf, Claude Desktop, or another MCP client that supports `stdio` servers after saving the configuration.
+Restart the client after saving. The Cookie passed on the command line or through the JSON `env` entry is stored in that client's local configuration; never publish or commit it.
 
 ### Run from source
 
