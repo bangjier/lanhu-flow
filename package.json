@@ -1,0 +1,69 @@
+{
+  "name": "lanhu-flow-mcp",
+  "version": "1.0.0",
+  "description": "Unofficial MCP server for Lanhu that gives AI coding agents structured access to designs, PRDs, design tokens, layers, and slices.",
+  "type": "module",
+  "license": "MIT",
+  "author": "bangjier",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bangjier/lanhu-flow.git"
+  },
+  "homepage": "https://github.com/bangjier/lanhu-flow#readme",
+  "bugs": {
+    "url": "https://github.com/bangjier/lanhu-flow/issues"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "lanhuflow",
+    "lanhu",
+    "蓝湖",
+    "design",
+    "design-to-code",
+    "figma-alternative",
+    "ai",
+    "cursor",
+    "windsurf",
+    "claude",
+    "claude-desktop",
+    "claude-code",
+    "html-css",
+    "design-tokens",
+    "prd",
+    "prototype",
+    "ui-design",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "lanhu-flow-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist",
+    "config.example.env",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
+  }
+}

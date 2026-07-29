@@ -1,0 +1,18 @@
+# Node / TypeScript
+node_modules/
+.npm/
+*.tsbuildinfo
+dist/
+coverage/
+
+# Runtime
+.env
+logs/
+data/
+
+# Editors
+.DS_Store
+.idea/
+.vscode/
+.cursor/
+.ace-tool/
