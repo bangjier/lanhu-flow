@@ -1,268 +1,211 @@
-<div align="center">
+# LanhuFlow MCP
 
-# 🎨 LanhuFlow MCP
+Turn Lanhu designs, layers, design tokens, slices, and product documents into structured context that AI coding tools can use.
 
-**Connect Lanhu design assets to AI coding workflows**
+[简体中文](../README.md) · [Report an issue](https://github.com/bangjier/lanhu-flow/issues) · [MIT License](../LICENSE)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js 20+](https://img.shields.io/badge/node-20+-339933.svg)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue.svg)](https://www.typescriptlang.org/)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![GitHub Stars](https://img.shields.io/github/stars/bangjier/lanhu-flow?style=social)](https://github.com/bangjier/lanhu-flow/stargazers)
+> LanhuFlow MCP is an independently maintained, third-party open source project. It is not an official Lanhu product and is not endorsed by Lanhu.
 
-English | [简体中文](../README.md)
+## From a Lanhu link to development context
 
-[Quick Start](#-quick-start) • [Features](#-key-features) • [Usage](#-usage-guide) • [Contributing](#-contributing)
+LanhuFlow MCP runs locally over `stdio`. Give your AI client a Lanhu URL that your account can access, and the server moves it through this pipeline:
 
-</div>
-
----
-
-## 🌟 Highlights
-
-LanhuFlow MCP is an unofficial [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for the Lanhu design collaboration platform, built with TypeScript.
-
-**Core capabilities**:
-- **Design analysis**: Select HTML, image, token, layout, layer, and slice outputs per artboard
-- **Structured design data**: Extract dimensions, layer trees, annotations, typography, colors, gradients, shadows, borders, and radii
-- **PRD analysis**: Read Lanhu product documents and Axure prototypes as structured content
-- **Reliable execution**: Analyze multiple designs concurrently with retry and operation-specific errors
-
-🎯 **Works with**:
-- ✅ Cursor + Lanhu
-- ✅ Windsurf + Lanhu
-- ✅ Claude Code + Lanhu
-- ✅ Any MCP-compatible AI development tool
-
----
-
-## ✨ Key Features
-
-### 📋 Requirement Document Analysis
-- **Page listing**: Discover pages in Lanhu PRD and prototype documents
-- **Structured analysis**: Extract page content and resources for downstream AI development workflows
-
-### 🎨 UI Design Support
-- **Design Viewing**: Batch download and display UI designs
-- **Schema → HTML+CSS**: Auto-convert design Schema to code, matching Lanhu export quality
-- **Sketch Annotation Fallback**: When Schema is unavailable, auto-extract full annotations from Sketch JSON
-- **Design Structure Tree**: Extract design hierarchy and normalized annotations from Sketch JSON
-- **Slice Extraction**: Auto-identify and export design slices and icon assets
-- **Structured Design Tokens**: Extract all colors, font families/sizes/weights, shadows, borders, border radii — sorted by usage frequency
-
-### ⚡ Performance & Integration
-- **Concurrent Processing**: Multiple designs analyzed in parallel (5 concurrent) with automatic retry
-- **MCP Resources**: Design lists exposed as MCP Resource templates for discovery
-- **MCP Prompts**: Built-in `frontend-dev` and `design-review` prompt templates
-
----
-
-## 🚀 Quick Start
-
-### Fastest Way: Let AI Install It
-
-Copy this and send it to your AI assistant (Cursor / Claude Code / Windsurf):
-
-> Install the LanhuFlow MCP server for me: https://github.com/bangjier/lanhu-flow
-
-The AI will read the repo and configure everything automatically. You just need to provide your Lanhu Cookie.
-
----
-
-### Manual Setup
-
-### Prerequisites
-
-- **Node.js 20+** (required)
-- Lanhu account and Cookie (required)
-
-> 💡 Get Cookie: Log in to [Lanhu web](https://lanhuapp.com), open browser DevTools (F12), copy Cookie from request headers. See [GET-COOKIE-TUTORIAL.md](GET-COOKIE-TUTORIAL.md) for details.
-
-### Zero-Install (npx)
-
-No cloning or building needed. Just configure your AI client:
-
-**Cursor / Windsurf** (`.cursor/mcp.json` or `.windsurf/mcp.json`):
-```json
-{
-  "mcpServers": {
-    "lanhu": {
-      "command": "npx",
-      "args": ["-y", "lanhu-flow-mcp"],
-      "env": { "LANHU_COOKIE": "your_cookie_here" }
-    }
-  }
-}
+```text
+Lanhu URL -> identify project and artboard -> fetch requested data -> normalize output -> return to the MCP client
 ```
 
-**Claude Desktop** (`claude_desktop_config.json`):
-```json
-{
-  "mcpServers": {
-    "lanhu": {
-      "command": "npx",
-      "args": ["-y", "lanhu-flow-mcp"],
-      "env": { "LANHU_COOKIE": "your_cookie_here" }
-    }
-  }
-}
-```
+The workflow depends on the link you provide:
 
-**Claude Code**:
-```bash
-claude mcp add lanhu -- npx -y lanhu-flow-mcp
-```
+| Input | Available context |
+| --- | --- |
+| Project or Stage URL | Artboard list and selected-artboard analysis |
+| Design detail URL with `image_id` | Automatic artboard selection |
+| PRD or Axure prototype URL | Page list, page content, and local resources |
+| Invite or share URL | Resolved project URL for subsequent tool calls |
 
-### Local Development
+Design analysis is composed of independent outputs. A client can request only the HTML, preview image, design tokens, layout summary, layer tree, or slices needed for the current task. If one output fails, successful outputs are still returned with a specific error for the failed operation.
+
+## Current installation method
+
+`lanhu-flow-mcp` has not been published to npm yet. Build and run the current release from GitHub.
+
+Requirement: Node.js 20 or later.
 
 ```bash
 git clone https://github.com/bangjier/lanhu-flow.git
 cd lanhu-flow
-npm install
+npm ci
 npm run build
-npm start
+cp config.example.env .env
 ```
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `LANHU_COOKIE` | Lanhu web Cookie | Yes |
-| `DDS_COOKIE` | DDS Cookie (defaults to LANHU_COOKIE) | No |
+Edit `.env` and provide at least:
 
----
-
-## 📖 Usage Guide
-
-### Requirement Document Analysis
-
-```
-Please analyze this requirement document:
-https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx
+```dotenv
+LANHU_COOKIE="your_lanhu_cookie_here"
 ```
 
-### UI Design Viewing
+Configure your MCP client with absolute paths:
 
-```
-Please analyze this design:
-https://lanhuapp.com/web/#/item/project/stage?tid=xxx&pid=xxx
-```
-
-### Slice Download
-
-```
-Download all slices from "Homepage Design"
-```
-
----
-
-## 🛠️ Available Tools
-
-### `lanhu_design` — Design Analysis
-
-Unified design tool with `mode` parameter:
-
-| Mode | Description |
-|------|-------------|
-| `list` | List all design images in a project |
-| `analyze` | Analyze selected HTML, image, token, layout, layer, and slice outputs (default) |
-| `tokens` | Extract design tokens only (fonts, colors, shadows) |
-| `slices` | Extract icon & image assets for download |
-
-The `analyze` mode supports an `include` parameter to control output: `html`, `image`, `tokens`, `layout`, `layers`, `slices`. Default: `["html", "tokens", "layers", "image"]`. Outputs run independently, and each design reports `success`, `partial_success`, or `error` with operation-specific errors.
-
-All four modes use the camelCase top-level fields `projectName`, `totalDesigns`, and `designs`. Design results from `analyze`, `tokens`, and `slices` contain `designId`, `name`, `status`, `success`, `dimensions`, `outputs`, and `errors`. `tokens` matches `analyze` with `include: ["tokens"]`, and `slices` matches `analyze` with `include: ["slices"]`; their values are available at `designs[].outputs.tokens.value` and `designs[].outputs.slices.value`. Convenience aliases such as `html_code`, `design_tokens`, and `layer_tree`, plus the former top-level slice result, have been removed.
-
-`list` defaults to `compact: true`; each entry contains only `index`, `designId`, `name`, `width`, `height`, `versionId`, `group`, and `artboardType`. Pass `compact: false` for preview URL, update time, Sketch/group metadata, `dimensions`, `outputs`, `errors`, and other detailed fields. Neither list format exposes the original `raw` item.
-
-When a stage or detail URL contains `image_id`, `analyze`, `tokens`, and `slices` automatically select that design if `design_names` is omitted. Explicit `design_names: "all"` still selects every design.
-
-`design_names` accepts an artboard name, UUID, numeric index, or numeric-string index; both `3` and `"3"` select the third list entry. A missing match no longer returns the complete design list: the response contains `DESIGN_NOT_FOUND`, the total available count, at most 10 approximate suggestions, and a hint to use `mode: "list"`. Invalid UUIDs return no suggestions by default.
-
-When an exact name matches multiple artboards, every non-`list` mode returns `status: "ambiguous"` with each matching `designId/id/index/name/version` instead of silently selecting the first item. Use a UUID or index to select one explicitly.
-
-Layer data is available at `outputs.layers.value` with `tree`, `annotations`, `truncated`, and `maxDepth`. Use `layer_depth` to control tree depth (default: `4`) or pass `"all"` for the complete tree. `completeness: "complete"` maps to `status: "success"`, `partial` maps to `partial_success`, and `empty` maps to `error` when neither a usable tree nor annotations are available. `sourceMissingFields` reports fields absent from the source Sketch data, while `normalizedMissingFields` reports fields still absent after normalization. Raw source-artboard dimensions are preserved at `outputs.layers.sourceArtboardDimensions` and never overwrite the shared development coordinate space; dimensions prefer a trustworthy root layer anchored at `(0,0)`.
-
-Every non-list design result includes `dimensions`, where `analysis` always means the layout coordinate space used for development. Resolution prefers normalized root-layer dimensions, the Schema page, the Sketch canvas/layer bounds normalized by device scale, slice canvas/bounds, and normalized image dimensions. When document slice dimensions use scaled list coordinates but slice bounds clearly cover a larger canvas, the maximum `position + size` range is used; for example, 187.5×856 resolves to 375×1712 with a 2x scale. Raw image pixels never become analysis dimensions directly: they are preserved at `outputs.image.pixelDimensions` with a `pixelRatio` relative to the development coordinates and `coordinateSpace: "image_pixels"`. Unresolved development coordinates use `analysis: null`, `scale: null`, and `coordinateSpace: "unknown"`.
-
-Design tokens separately report colors, fonts, font sizes, line heights, letter spacing, gradients, shadows, borders, and radii across `artboard`, `board`, and legacy `info[]` Sketch JSON formats. Normal stage designs merge Sketch and DDS Schema styles; if either source is unavailable, the other source is returned with a concrete warning.
-
-### `lanhu_page` — PRD / Prototype Analysis
-
-| Mode | Description |
-|------|-------------|
-| `list` | List all pages in a PRD document |
-| `analyze` | PRD / Axure → Structured analysis (default) |
-
-### `lanhu_resolve_invite` — Resolve Invite Links
-
-Parse Lanhu invite/share links into usable project URLs.
-
----
-
-## 📁 Project Structure
-
-```
-lanhu-flow/
-├── src/                          # TypeScript source
-│   ├── server.ts                 # MCP server entry
-│   ├── config.ts                 # Configuration
-│   ├── lanhu/                    # Lanhu API client
-│   ├── tools/                    # MCP tool registration
-│   ├── transform/                # Data transformation
-│   └── shared/                   # Shared modules
-├── tests-ts/                     # Vitest tests
-├── dist/                         # Build output (gitignored)
-├── package.json                  # Dependencies
-├── tsconfig.json                 # TypeScript config
-├── config.example.env            # Environment template
-└── README.md
+```json
+{
+  "mcpServers": {
+    "lanhu-flow": {
+      "command": "node",
+      "args": [
+        "--env-file=/ABSOLUTE/PATH/lanhu-flow/.env",
+        "/ABSOLUTE/PATH/lanhu-flow/dist/server.js"
+      ]
+    }
+  }
+}
 ```
 
----
+Replace `/ABSOLUTE/PATH/lanhu-flow` with the repository path on your machine, then restart Cursor, Windsurf, Claude Desktop, or another MCP client that supports `stdio` servers.
 
-## 🧪 Development
+After the npm package is published, the local checkout can be replaced with this configuration:
+
+```json
+{
+  "mcpServers": {
+    "lanhu-flow": {
+      "command": "npx",
+      "args": ["-y", "lanhu-flow-mcp"],
+      "env": {
+        "LANHU_COOKIE": "your_lanhu_cookie_here"
+      }
+    }
+  }
+}
+```
+
+## Get your Lanhu Cookie
+
+1. Sign in to [Lanhu on the web](https://lanhuapp.com).
+2. Open browser developer tools, select the Network panel, and reload the page.
+3. Select a request sent to `lanhuapp.com` and copy the complete `Cookie` value from Request Headers.
+4. Store the Cookie in your local `.env` file or in the MCP client's environment configuration.
+
+The Cookie carries your Lanhu session permissions. Never paste it into a chat, issue, screenshot, or log, and never commit the `.env` file. The server can only read content that the signed-in account is already allowed to access.
+
+See the [Cookie guide](GET-COOKIE-TUTORIAL.md) for detailed browser instructions.
+
+## Recommended workflows
+
+### List first, then select
+
+For a project with many artboards, begin with a compact list:
+
+```text
+List the artboards in this Lanhu project and return only the compact result: <Lanhu URL>
+```
+
+Then select a target by name, UUID, or list index:
+
+```text
+Analyze artboard 3. Return only tokens, layout, and layers, with a layer depth of 5.
+```
+
+This keeps unrelated context and base64 image data out of the response.
+
+### Analyze a detail URL directly
+
+When the URL already contains `image_id`, the server can select that artboard without a separate name:
+
+```text
+Read this Lanhu design detail and return the HTML, design tokens, and layer structure needed to implement it: <Lanhu detail URL>
+```
+
+### Read a product document
+
+For a PRD or Axure prototype, list its pages before analyzing selected ones:
+
+```text
+List the pages in this Lanhu product document, then analyze "Sign in" and "Forgot password": <PRD URL>
+```
+
+## MCP interface
+
+### `lanhu_design`
+
+Reads and analyzes Lanhu design projects.
+
+| Parameter | Values | Description |
+| --- | --- | --- |
+| `url` | Lanhu URL | Required; supports Stage and design detail URLs |
+| `mode` | `list` / `analyze` / `tokens` / `slices` | Defaults to `analyze` |
+| `design_names` | Name, UUID, index, array, or `all` | Optional when a detail URL includes `image_id` |
+| `include` | `html` / `image` / `tokens` / `layout` / `layers` / `slices` | Selects outputs for `analyze` |
+| `compact` | `true` / `false` | Controls compact `list` entries; defaults to `true` |
+| `layer_depth` | Non-negative integer or `all` | Maximum layer-tree depth; defaults to `4` |
+
+By default, `analyze` requests `html`, `tokens`, `layers`, and `image`. If several artboards have the same name, the tool returns the candidates instead of silently choosing the first. If no artboard matches, it returns a limited set of approximate suggestions.
+
+Each design result reports `status`, `dimensions`, `outputs`, and `errors` separately. `dimensions.analysis` is the coordinate space intended for implementation. Raw bitmap dimensions remain in the image output and are not treated as layout dimensions.
+
+### `lanhu_page`
+
+Reads PRDs and Axure prototypes.
+
+| Parameter | Description |
+| --- | --- |
+| `url` | Lanhu product-document URL containing `docId` |
+| `mode` | `list` or `analyze`; defaults to `analyze` |
+| `page_names` | Page name, array of names, or `all`; required for analysis |
+| `analysis_mode` | `developer`, `tester`, or `explorer` |
+
+Page resources are downloaded to `LANHU_DATA_DIR`, which defaults to `data/ts` under the current working directory.
+
+### `lanhu_resolve_invite_link`
+
+Accepts `invite_url`, resolves the final project URL behind an invite or share page, and returns parsed parameters such as `tid`, `pid`, and `docId` when available.
+
+## Built-in Resource and Prompts
+
+| Type | Name | Purpose |
+| --- | --- | --- |
+| Resource | `project-designs` | Reads an artboard list through `lanhu://project/{pid}/designs?tid={tid}` |
+| Prompt | `frontend-dev` | Structures a frontend implementation request around a design |
+| Prompt | `design-review` | Structures a design consistency and feasibility review |
+
+## Configuration
+
+| Environment variable | Default | Description |
+| --- | --- | --- |
+| `LANHU_COOKIE` | None | Lanhu session Cookie used to access design data |
+| `DDS_COOKIE` | `LANHU_COOKIE` | Optional separate Cookie for DDS data |
+| `LANHU_BASE_URL` | `https://lanhuapp.com` | Base URL for Lanhu requests |
+| `LANHU_DATA_DIR` | `data/ts` | Local directory for PRD resources and other data |
+| `LANHU_REQUEST_TIMEOUT_MS` | `20000` | Request timeout in milliseconds |
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, or `error` |
+| `MCP_SERVER_NAME` | `lanhu-flow-mcp` | MCP server name |
+| `MCP_SERVER_VERSION` | `1.0.0` | MCP server version |
+
+## Local development
 
 ```bash
-npm run check    # Type check
-npm test         # Run tests
-npm run dev      # Dev mode
+npm ci
+npm run check
+npm test
+npm run build
 ```
 
----
+To connect to Lanhu while developing:
 
-## 🔒 Security
+```bash
+node --env-file=.env dist/server.js
+```
 
-- ⚠️ **Cookie Security**: Never commit `.env` files to public repos
-- 🔐 **Access Control**: Deploy in private network recommended
-- 📝 **Data Privacy**: Credentials and generated data remain in the local runtime
+The server uses standard input and output for MCP transport. It is normal for a direct terminal launch to remain open and wait for messages. MCP responses belong on stdout; diagnostics belong on stderr so they do not corrupt protocol messages.
 
----
+## Operational boundaries
 
-## 🤝 Contributing
+- Changes to Lanhu's web interfaces may require corresponding parser updates.
+- The output gives AI tools implementation context; it does not guarantee that generated code will exactly match a design.
+- Batch analysis and responses containing `image` can be large. Prefer `include` and `layer_depth` to limit the result.
+- PRD analysis writes page resources to the local data directory. Manage those files according to your project's data-security requirements.
+- Follow your Lanhu account permissions, team policies, and applicable terms of service.
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
+## License
 
----
-
-## 📄 License
-
-MIT License - see [LICENSE](../LICENSE) file
-
----
-
-## 📞 Contact
-
-- GitHub Issues: [Submit Issue](https://github.com/bangjier/lanhu-flow/issues)
-
----
-
-## ⚠️ Disclaimer
-
-This project is a **third-party open source project**, independently developed and maintained by community developers, and **is NOT an official Lanhu product**.
-
-- No official affiliation with Lanhu (蓝湖)
-- Interacts through public web interfaces only
-- Requires a legitimate Lanhu account
-- For learning and research purposes; users assume all risks
-- Data processed locally; credentials stored in your environment only
-- MIT Licensed, provided "as is" without warranty
+LanhuFlow MCP is available under the [MIT License](../LICENSE). Report problems or suggest improvements through [GitHub Issues](https://github.com/bangjier/lanhu-flow/issues).

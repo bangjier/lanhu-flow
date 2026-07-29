@@ -1,229 +1,211 @@
-<div align="center">
+# LanhuFlow MCP
 
-# 🎨 LanhuFlow MCP
+把蓝湖中的设计稿、图层、设计变量、切图和产品文档，转换成 AI 编程工具可以调用的结构化上下文。
 
-**连接蓝湖设计资产与 AI 编程工作流**
+[English](docs/README_EN.md) · [问题反馈](https://github.com/bangjier/lanhu-flow/issues) · [MIT License](LICENSE)
 
-[![npm version](https://img.shields.io/npm/v/lanhu-flow-mcp)](https://www.npmjs.com/package/lanhu-flow-mcp)
-[![npm downloads](https://img.shields.io/npm/dm/lanhu-flow-mcp)](https://www.npmjs.com/package/lanhu-flow-mcp)
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
+> LanhuFlow MCP 是独立维护的第三方开源项目，不属于蓝湖官方，也未获得蓝湖官方背书。
 
-[English](docs/README_EN.md)
+## 从蓝湖链接到开发上下文
 
-</div>
+LanhuFlow MCP 在本地以 `stdio` 方式运行。你把有权限访问的蓝湖链接交给 AI，服务会完成下面这条处理路径：
 
----
+```text
+蓝湖 URL -> 识别项目与画板 -> 按需读取设计数据 -> 规范化输出 -> 返回 MCP 客户端
+```
 
-## 这是什么
+不同链接会进入不同的工作流：
 
-`lanhu-flow-mcp` 是面向蓝湖的非官方 [MCP](https://modelcontextprotocol.io/) 服务器。连接 **Cursor、Windsurf、Claude Desktop、Claude Code** 等 MCP 客户端后，AI 可以读取设计稿、提取 HTML/CSS 和 Design Tokens、解析 PRD、获取图层与切图资源。
+| 输入 | 可以获得的内容 |
+| --- | --- |
+| 项目或 Stage 链接 | 画板列表、指定画板分析 |
+| 带 `image_id` 的设计详情链接 | 自动定位对应画板 |
+| PRD / Axure 原型链接 | 页面列表、页面内容与本地资源 |
+| 邀请或分享链接 | 可继续调用的实际项目 URL |
 
-> **一行命令，零配置** — `npx -y lanhu-flow-mcp`，粘贴蓝湖链接就能用。
+设计分析不是一个不可拆分的大结果。调用方可以只请求当前任务需要的内容：HTML、预览图、Design Tokens、布局摘要、图层树或切图。某一项失败时，其他成功项仍会返回，并附带具体错误。
 
-### 核心能力
+## 当前安装方式
 
-- **设计稿 → 代码**：生成像素级 HTML + CSS，含完整 Design Tokens（颜色、字体、阴影、渐变）
-- **结构化 Design Tokens**：提取所有颜色、字体族/字号/字重、阴影、边框、圆角，按使用频率排序
-- **PRD 驱动开发**：将 PRD 或 Axure 原型交给 AI，需求感知编码
-- **自动切图**：直接从蓝湖提取切图、图标和图片，无需手动导出
-- **并发 + 重试**：多设计稿并行分析，网络异常自动重试
-- **MCP Resources & Prompts**：内置前端开发和设计走查 Prompt 模板
+`lanhu-flow-mcp` 尚未发布到 npm。当前版本请从 GitHub 构建运行。
 
----
+环境要求：Node.js 20 或更高版本。
 
-## 安装
+```bash
+git clone https://github.com/bangjier/lanhu-flow.git
+cd lanhu-flow
+npm ci
+npm run build
+cp config.example.env .env
+```
 
-### 最快方式：让 AI 帮你装
+编辑 `.env`，至少填写：
 
-复制下面这段话，发给你的 AI 助手（Cursor / Claude Code / Windsurf）：
+```dotenv
+LANHU_COOKIE="your_lanhu_cookie_here"
+```
 
-> 帮我安装 LanhuFlow MCP：https://github.com/bangjier/lanhu-flow
-
-AI 会自动读取仓库说明并完成配置，你只需要提供蓝湖 Cookie。
-
----
-
-### 手动配置
-
-无需 clone 代码，`npx` 自动安装。
-
-**Cursor / Windsurf** — 编辑 `.cursor/mcp.json`（或 `.windsurf/mcp.json`）：
+然后在 MCP 客户端中使用绝对路径配置服务：
 
 ```json
 {
   "mcpServers": {
-    "lanhu": {
-      "command": "npx",
-      "args": ["-y", "lanhu-flow-mcp"],
-      "env": { "LANHU_COOKIE": "your_cookie_here" }
+    "lanhu-flow": {
+      "command": "node",
+      "args": [
+        "--env-file=/ABSOLUTE/PATH/lanhu-flow/.env",
+        "/ABSOLUTE/PATH/lanhu-flow/dist/server.js"
+      ]
     }
   }
 }
 ```
 
-**Claude Desktop** — 编辑 `claude_desktop_config.json`：
+将 `/ABSOLUTE/PATH/lanhu-flow` 替换为本机仓库绝对路径，然后重启 Cursor、Windsurf、Claude Desktop 或其他支持 `stdio` 的 MCP 客户端。
+
+npm 包发布后，可以改用下面的配置，无需保留本地源码：
 
 ```json
 {
   "mcpServers": {
-    "lanhu": {
+    "lanhu-flow": {
       "command": "npx",
       "args": ["-y", "lanhu-flow-mcp"],
-      "env": { "LANHU_COOKIE": "your_cookie_here" }
+      "env": {
+        "LANHU_COOKIE": "your_lanhu_cookie_here"
+      }
     }
   }
 }
 ```
 
-**Claude Code**：
+## 获取蓝湖 Cookie
+
+1. 登录[蓝湖网页版](https://lanhuapp.com)。
+2. 打开浏览器开发者工具，进入 Network 面板并刷新页面。
+3. 选择一个发往 `lanhuapp.com` 的请求，在 Request Headers 中复制完整的 `Cookie` 值。
+4. 将 Cookie 写入本地 `.env` 或 MCP 客户端的环境变量配置。
+
+Cookie 代表你的蓝湖登录权限。不要将它粘贴到聊天记录、Issue、截图或日志中，也不要提交 `.env` 文件。服务只能读取当前账号本来就有权访问的内容。
+
+更详细的浏览器操作见 [Cookie 获取教程](docs/GET-COOKIE-TUTORIAL.md)。
+
+## 推荐使用流程
+
+### 先列出，再选择
+
+面对包含大量画板的项目，先让 AI 列出精简清单：
+
+```text
+列出这个蓝湖项目中的画板，只返回精简结果：<蓝湖链接>
+```
+
+再按名称、UUID 或列表索引选择目标：
+
+```text
+分析第 3 张画板，只读取 tokens、layout 和 layers，图层深度设为 5。
+```
+
+这样可以减少无关上下文和 base64 图片带来的输出体积。
+
+### 直接分析详情链接
+
+当链接本身带有 `image_id` 时，可以直接要求分析，不必再传画板名称：
+
+```text
+读取这个蓝湖设计详情，只给我实现页面所需的 HTML、Design Tokens 和图层结构：<蓝湖详情链接>
+```
+
+### 读取产品文档
+
+PRD 或 Axure 原型建议同样先获取页面清单，再分析指定页面：
+
+```text
+列出这个蓝湖产品文档的页面，然后分析“登录”和“忘记密码”：<PRD 链接>
+```
+
+## MCP 接口
+
+### `lanhu_design`
+
+用于读取和分析设计项目。
+
+| 参数 | 取值 | 说明 |
+| --- | --- | --- |
+| `url` | 蓝湖 URL | 必填，支持 Stage 和设计详情链接 |
+| `mode` | `list` / `analyze` / `tokens` / `slices` | 默认 `analyze` |
+| `design_names` | 名称、UUID、索引、数组或 `all` | 详情链接带 `image_id` 时可省略 |
+| `include` | `html` / `image` / `tokens` / `layout` / `layers` / `slices` | 控制 `analyze` 返回内容 |
+| `compact` | `true` / `false` | 控制 `list` 是否返回精简条目，默认 `true` |
+| `layer_depth` | 非负整数或 `all` | 图层树最大深度，默认 `4` |
+
+`analyze` 默认请求 `html`、`tokens`、`layers` 和 `image`。如果画板同名，工具会返回候选项而不是静默选择第一张；如果没有匹配，会返回有限数量的近似建议。
+
+每个设计结果都会分别报告 `status`、`dimensions`、`outputs` 和 `errors`。`dimensions.analysis` 表示开发布局坐标；原始图片像素保存在图片输出中，不会被误当成布局尺寸。
+
+### `lanhu_page`
+
+用于读取 PRD 或 Axure 原型。
+
+| 参数 | 说明 |
+| --- | --- |
+| `url` | 含 `docId` 的蓝湖产品文档链接 |
+| `mode` | `list` 或 `analyze`，默认 `analyze` |
+| `page_names` | 页面名称、名称数组或 `all`；分析模式必填 |
+| `analysis_mode` | `developer`、`tester` 或 `explorer` |
+
+页面资源会下载到 `LANHU_DATA_DIR`，默认目录为当前工作目录下的 `data/ts`。
+
+### `lanhu_resolve_invite_link`
+
+接收 `invite_url`，解析邀请或分享页面最终跳转到的项目地址，并尽可能返回 `tid`、`pid` 和 `docId` 等参数。
+
+## 内置 Resource 与 Prompt
+
+| 类型 | 名称 | 用途 |
+| --- | --- | --- |
+| Resource | `project-designs` | 通过 `lanhu://project/{pid}/designs?tid={tid}` 读取画板清单 |
+| Prompt | `frontend-dev` | 组织基于设计稿的前端实现请求 |
+| Prompt | `design-review` | 组织设计一致性与实现可行性检查 |
+
+## 配置
+
+| 环境变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `LANHU_COOKIE` | 无 | 访问蓝湖数据所需的登录 Cookie |
+| `DDS_COOKIE` | `LANHU_COOKIE` | 单独访问 DDS 数据时使用 |
+| `LANHU_BASE_URL` | `https://lanhuapp.com` | 蓝湖服务基础地址 |
+| `LANHU_DATA_DIR` | `data/ts` | PRD 资源等本地数据目录 |
+| `LANHU_REQUEST_TIMEOUT_MS` | `20000` | 请求超时时间，单位毫秒 |
+| `LOG_LEVEL` | `info` | `debug`、`info`、`warn` 或 `error` |
+| `MCP_SERVER_NAME` | `lanhu-flow-mcp` | MCP 服务名称 |
+| `MCP_SERVER_VERSION` | `1.0.0` | MCP 服务版本 |
+
+## 本地开发
 
 ```bash
-claude mcp add lanhu -- npx -y lanhu-flow-mcp
+npm ci
+npm run check
+npm test
+npm run build
 ```
 
-然后设置环境变量 `LANHU_COOKIE`。
-
-### 获取 Cookie
-
-1. 登录 [蓝湖](https://lanhuapp.com)
-2. F12 打开开发者工具 → Network 标签
-3. 复制任意请求的 `Cookie` 请求头
-
-配置完成后重启客户端，粘贴蓝湖链接即可使用。
-
----
-
-## 工具
-
-### `lanhu_design` — 设计稿
-
-通过 `mode` 参数切换功能：
-
-| Mode | 说明 |
-|------|------|
-| `list` | 列出项目所有设计图 |
-| `analyze` | 按需分析 HTML、图片、Tokens、布局、图层和切图（默认） |
-| `tokens` | 仅提取 Design Tokens（字体、颜色、阴影等） |
-| `slices` | 提取切图资源 |
-
-`analyze` 模式支持 `include` 参数按需选择输出：`html`、`image`、`tokens`、`layout`、`layers`、`slices`。默认 `["html", "tokens", "layers", "image"]`。每项输出独立执行；单个设计的 `status` 为 `success`、`partial_success` 或 `error`，具体失败会记录在 `errors` 中。
-
-四种模式统一使用 camelCase 顶层字段 `projectName`、`totalDesigns` 和 `designs`。`analyze`、`tokens`、`slices` 的设计结果包含 `designId`、`name`、`status`、`success`、`dimensions`、`outputs` 和 `errors`。`tokens` 与 `analyze + include: ["tokens"]`、`slices` 与 `analyze + include: ["slices"]` 使用相同的结构化响应，数据分别位于 `designs[].outputs.tokens.value` 和 `designs[].outputs.slices.value`。旧的 `html_code`、`design_tokens`、`layer_tree` 等便利别名以及 slices 顶层结果已移除。
-
-`list` 默认使用 `compact: true`，每个画板仅返回 `index`、`designId`、`name`、`width`、`height`、`versionId`、`group` 和 `artboardType`。传入 `compact: false` 可返回预览 URL、更新时间、Sketch/group 元数据、`dimensions`、`outputs` 和 `errors` 等详细字段；两种 list 结构都不会返回原始 `raw`。
-
-当 stage 或 detail URL 自带 `image_id` 时，`analyze`、`tokens`、`slices` 可以省略 `design_names`，工具会自动选择该画板；显式传入 `design_names: "all"` 仍会选择全部画板。
-
-`design_names` 支持画板名称、UUID、数字索引和数字字符串索引，例如 `3` 与 `"3"` 都会选择 list 中第 3 张画板。未匹配时不会返回完整画板列表：响应包含 `DESIGN_NOT_FOUND`、项目画板总数、最多 10 条近似 suggestions，并提示使用 `mode: "list"` 获取完整清单；无效 UUID 默认不返回 suggestions。
-
-当名称精确匹配多个同名画板时，非 `list` 模式返回 `status: "ambiguous"` 和全部匹配项的 `designId/id/index/name/version`，不会静默选择第一张；可改用 UUID 或索引明确选择。
-
-`layers` 数据位于 `outputs.layers.value`，其中包含 `tree`、`annotations`、`truncated` 和 `maxDepth`。可用 `layer_depth` 控制图层树深度，默认 `4`；传入 `"all"` 返回完整图层树。`completeness: "complete"` 对应 `status: "success"`，`partial` 对应 `partial_success`，没有可用树和标注的 `empty` 对应 `error`。`sourceMissingFields` 记录源 Sketch 缺失字段，`normalizedMissingFields` 记录规范化后仍缺失的字段。源 artboard 的原始尺寸保留在 `outputs.layers.sourceArtboardDimensions`，不会覆盖统一的开发坐标；dimensions 优先使用位于 `(0,0)` 的可信根图层尺寸。
-
-每个非 list 设计结果都包含 `dimensions`，其中 `analysis` 始终表示开发实现使用的布局坐标。统一解析优先级为规范化 layers 根图层、Schema 页面、按 device scale 归一化的 Sketch 画布/图层边界、切图 canvas/坐标范围、规范化图片尺寸。切图 document 尺寸若处于 list 坐标，而切图边界明确覆盖更大的画布，会使用 `position + size` 最大范围；例如 187.5×856 会恢复为 375×1712 和 2x scale。图片的原始位图尺寸不会直接写入 analysis，而是保存在 `outputs.image.pixelDimensions`，同时返回相对开发坐标的 `pixelRatio` 和 `coordinateSpace: "image_pixels"`。无法可靠确定开发坐标时返回 `analysis: null`、`scale: null`、`coordinateSpace: "unknown"`。
-
-Design Tokens 会分别汇总颜色、字体、字号、行高、字距、渐变、阴影、边框和圆角，并兼容 `artboard`、`board` 与 legacy `info[]` Sketch JSON。普通 stage 设计会合并 Sketch 与 DDS Schema 样式；任一来源不可用时仍会返回另一来源及具体 warning。
-
-**Design Tokens 输出示例：**
-
-```
-=== Design Tokens ===
-
-Colors (12 unique):
-  rgba(140,140,140,1) x48
-  rgba(255,255,255,1) x28
-  rgba(51,51,51,1) x12
-  ...
-
-Fonts (7 unique):
-  Source Han Sans CN / Regular / 14px x25
-  PingFang SC / Bold / 10px x3
-  ...
-
-Shadows (3 unique):
-  rgba(0,81,187,0.03) 0px 0px 0px 1px x3
-  ...
-```
-
-### `lanhu_page` — PRD / 原型
-
-| Mode | 说明 |
-|------|------|
-| `list` | 列出 PRD 所有页面 |
-| `analyze` | PRD/原型 → 结构化分析（默认） |
-
-### `lanhu_resolve_invite` — 解析邀请链接
-
-将蓝湖分享链接解析为可用的项目 URL。
-
----
-
-## MCP Resources & Prompts
-
-| 类型 | 名称 | 说明 |
-|------|------|------|
-| Resource | `project-designs` | 项目设计稿列表（`lanhu://project/{pid}/designs?tid={tid}`） |
-| Prompt | `frontend-dev` | 根据设计稿生成像素级前端代码 |
-| Prompt | `design-review` | 审查设计一致性和可实现性 |
-
----
-
-## 使用场景
-
-- **前端开发**：粘贴蓝湖链接 → AI 生成与设计稿匹配的组件代码
-- **设计走查**：对比实现与 Design Tokens（间距、颜色、字体）
-- **需求实现**：将 PRD 交给 AI，需求驱动的功能开发
-- **资源导出**：批量提取图标和图片
-
----
-
-## 兼容性
-
-| 客户端 | 支持 | 传输 |
-|--------|------|------|
-| Cursor | ✅ | stdio |
-| Windsurf | ✅ | stdio |
-| Claude Desktop | ✅ | stdio |
-| Claude Code | ✅ | stdio |
-| 其他 MCP 兼容 IDE | ✅ | stdio |
-
----
-
-## 开发
+需要连接蓝湖调试时：
 
 ```bash
-git clone https://github.com/bangjier/lanhu-flow.git && cd lanhu-flow
-npm install && cp config.example.env .env  # 填入 LANHU_COOKIE
-npm run dev    # 开发模式
-npm run build  # 构建
-npm test       # 测试
+node --env-file=.env dist/server.js
 ```
 
----
+服务使用标准输入输出传输协议，直接在终端启动后保持等待属于正常行为。MCP 响应写入标准输出，诊断信息应写入标准错误，避免破坏协议数据。
 
-## FAQ
+## 使用边界
 
-**Q: 什么是 MCP？**
-A: [Model Context Protocol](https://modelcontextprotocol.io/)，让 AI 助手安全连接外部工具的开放标准。
+- 蓝湖网页接口发生变化时，解析能力可能需要同步更新。
+- 输出用于为 AI 提供实现上下文，不保证自动生成的代码与设计稿完全一致。
+- 批量分析和包含 `image` 的响应可能很大，优先使用 `include` 和 `layer_depth` 控制范围。
+- PRD 分析会将页面资源写入本地数据目录，请按项目的数据安全要求管理这些文件。
+- 请遵守蓝湖账号权限、团队规范及适用的服务条款。
 
-**Q: 支持哪些蓝湖套餐？**
-A: 任何可网页访问的蓝湖账号，通过浏览器 Cookie 认证。
+## 许可
 
-**Q: `analyze` 返回太大怎么办？**
-A: 用 `include` 参数，如 `["tokens"]` 只返回 Design Tokens；分析图层时也可用 `layer_depth` 限制深度。默认输出包含 base64 预览图，可通过显式 `include` 排除 `image`。
-
-**Q: 不用 Cursor 也能用？**
-A: 能。支持所有 MCP 客户端。
-
----
-
-## 免责声明
-
-LanhuFlow MCP 是独立维护的第三方开源项目，并非蓝湖官方产品，也未获得蓝湖官方背书。使用者需要拥有合法的蓝湖账号，并自行承担通过网页接口访问数据的相关风险。项目只在本地处理凭据；请勿提交或公开分享 Cookie。
-
----
-
-## License
-
-[MIT](LICENSE) © [bangjier](https://github.com/bangjier)
+项目采用 [MIT License](LICENSE)。问题和改进建议请提交到 [GitHub Issues](https://github.com/bangjier/lanhu-flow/issues)。
