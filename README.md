@@ -25,11 +25,27 @@ LanhuFlow MCP 在本地以 `stdio` 方式运行。你把有权限访问的蓝湖
 
 设计分析不是一个不可拆分的大结果。调用方可以只请求当前任务需要的内容：HTML、预览图、Design Tokens、布局摘要、图层树或切图。某一项失败时，其他成功项仍会返回，并附带具体错误。
 
-## 当前安装方式
+## 安装
 
-`lanhu-flow-mcp` 尚未发布到 npm。当前版本请从 GitHub 构建运行。
+环境要求：Node.js 20 或更高版本。无需克隆仓库，在 MCP 客户端中使用 `npx` 即可：
 
-环境要求：Node.js 20 或更高版本。
+```json
+{
+  "mcpServers": {
+    "lanhu-flow": {
+      "command": "npx",
+      "args": ["-y", "lanhu-flow-mcp"],
+      "env": {
+        "LANHU_COOKIE": "your_lanhu_cookie_here"
+      }
+    }
+  }
+}
+```
+
+配置完成后，重启 Cursor、Windsurf、Claude Desktop 或其他支持 `stdio` 的 MCP 客户端。
+
+### 从源码运行
 
 ```bash
 git clone https://github.com/bangjier/lanhu-flow.git
@@ -39,13 +55,7 @@ npm run build
 cp config.example.env .env
 ```
 
-编辑 `.env`，至少填写：
-
-```dotenv
-LANHU_COOKIE="your_lanhu_cookie_here"
-```
-
-然后在 MCP 客户端中使用绝对路径配置服务：
+编辑 `.env` 并填写 `LANHU_COOKIE`，然后在 MCP 客户端中使用绝对路径：
 
 ```json
 {
@@ -61,23 +71,7 @@ LANHU_COOKIE="your_lanhu_cookie_here"
 }
 ```
 
-将 `/ABSOLUTE/PATH/lanhu-flow` 替换为本机仓库绝对路径，然后重启 Cursor、Windsurf、Claude Desktop 或其他支持 `stdio` 的 MCP 客户端。
-
-npm 包发布后，可以改用下面的配置，无需保留本地源码：
-
-```json
-{
-  "mcpServers": {
-    "lanhu-flow": {
-      "command": "npx",
-      "args": ["-y", "lanhu-flow-mcp"],
-      "env": {
-        "LANHU_COOKIE": "your_lanhu_cookie_here"
-      }
-    }
-  }
-}
-```
+将 `/ABSOLUTE/PATH/lanhu-flow` 替换为本机仓库路径。
 
 ## 获取蓝湖 Cookie
 

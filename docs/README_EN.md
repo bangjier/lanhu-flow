@@ -25,11 +25,27 @@ The workflow depends on the link you provide:
 
 Design analysis is composed of independent outputs. A client can request only the HTML, preview image, design tokens, layout summary, layer tree, or slices needed for the current task. If one output fails, successful outputs are still returned with a specific error for the failed operation.
 
-## Current installation method
+## Installation
 
-`lanhu-flow-mcp` has not been published to npm yet. Build and run the current release from GitHub.
+Requirement: Node.js 20 or later. No repository checkout is required; configure your MCP client to run the package through `npx`:
 
-Requirement: Node.js 20 or later.
+```json
+{
+  "mcpServers": {
+    "lanhu-flow": {
+      "command": "npx",
+      "args": ["-y", "lanhu-flow-mcp"],
+      "env": {
+        "LANHU_COOKIE": "your_lanhu_cookie_here"
+      }
+    }
+  }
+}
+```
+
+Restart Cursor, Windsurf, Claude Desktop, or another MCP client that supports `stdio` servers after saving the configuration.
+
+### Run from source
 
 ```bash
 git clone https://github.com/bangjier/lanhu-flow.git
@@ -39,13 +55,7 @@ npm run build
 cp config.example.env .env
 ```
 
-Edit `.env` and provide at least:
-
-```dotenv
-LANHU_COOKIE="your_lanhu_cookie_here"
-```
-
-Configure your MCP client with absolute paths:
+Set `LANHU_COOKIE` in `.env`, then configure the MCP client with absolute paths:
 
 ```json
 {
@@ -61,23 +71,7 @@ Configure your MCP client with absolute paths:
 }
 ```
 
-Replace `/ABSOLUTE/PATH/lanhu-flow` with the repository path on your machine, then restart Cursor, Windsurf, Claude Desktop, or another MCP client that supports `stdio` servers.
-
-After the npm package is published, the local checkout can be replaced with this configuration:
-
-```json
-{
-  "mcpServers": {
-    "lanhu-flow": {
-      "command": "npx",
-      "args": ["-y", "lanhu-flow-mcp"],
-      "env": {
-        "LANHU_COOKIE": "your_lanhu_cookie_here"
-      }
-    }
-  }
-}
-```
+Replace `/ABSOLUTE/PATH/lanhu-flow` with the repository path on your machine.
 
 ## Get your Lanhu Cookie
 
