@@ -31,12 +31,15 @@ Requirement: Node.js 20 or later. Each option below uses `npx` to download and r
 
 ### Codex
 
-```bash
-codex mcp add \
-  --env LANHU_COOKIE="your_lanhu_cookie_here" \
-  lanhu-flow -- npx -y lanhu-flow-mcp
+Add the following to `~/.codex/config.toml`:
 
-codex mcp list
+```toml
+[mcp_servers.lanhu]
+command = "npx"
+args = ["-y", "lanhu-flow-mcp"]
+
+[mcp_servers.lanhu.env]
+LANHU_COOKIE = "replace_with_your_lanhu_cookie"
 ```
 
 Restart Codex or start a new task after adding the server.

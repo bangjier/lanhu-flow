@@ -31,12 +31,15 @@ LanhuFlow MCP 在本地以 `stdio` 方式运行。你把有权限访问的蓝湖
 
 ### Codex
 
-```bash
-codex mcp add \
-  --env LANHU_COOKIE="your_lanhu_cookie_here" \
-  lanhu-flow -- npx -y lanhu-flow-mcp
+在 `~/.codex/config.toml` 中添加：
 
-codex mcp list
+```toml
+[mcp_servers.lanhu]
+command = "npx"
+args = ["-y", "lanhu-flow-mcp"]
+
+[mcp_servers.lanhu.env]
+LANHU_COOKIE = "替换成你的蓝湖Cookie"
 ```
 
 添加后重启 Codex 或新建任务，使 MCP 配置生效。
