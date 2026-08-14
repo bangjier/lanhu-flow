@@ -31,6 +31,20 @@ LanhuFlow MCP 在本地以 `stdio` 方式运行。你把有权限访问的蓝湖
 
 ### Codex
 
+任选以下一种方式添加。
+
+#### 方式一：命令行添加
+
+```bash
+codex mcp add \
+  --env LANHU_COOKIE="your_lanhu_cookie_here" \
+  lanhu-flow -- npx -y lanhu-flow-mcp
+
+codex mcp list
+```
+
+#### 方式二：编辑配置文件
+
 在 `~/.codex/config.toml` 中添加：
 
 ```toml

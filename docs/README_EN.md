@@ -31,6 +31,20 @@ Requirement: Node.js 20 or later. Each option below uses `npx` to download and r
 
 ### Codex
 
+Choose either method below.
+
+#### Option 1: Add with the CLI
+
+```bash
+codex mcp add \
+  --env LANHU_COOKIE="your_lanhu_cookie_here" \
+  lanhu-flow -- npx -y lanhu-flow-mcp
+
+codex mcp list
+```
+
+#### Option 2: Edit the configuration file
+
 Add the following to `~/.codex/config.toml`:
 
 ```toml
